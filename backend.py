@@ -145,6 +145,7 @@ def make_cluster(bs_1, bs_2, num_modes ,r, level=0):
     bipartition = identify_bipartition(Z) # Identify modes to be transformed for H-graph to Approximate CV cluster state  (ACVCS) conversion
     S_h2c = generate_S_h2c(bipartition,num_modes) # Symplectic matrix for H-graph -> ACVCS
     Z = transform_Z(S_h2c, Z) # Adjacency matrix for ACVCS for EPR state
+    
     if level==1:
         return transform_Z(cluster_symplectic(num_modes, bs_1), Z)
     elif level==2:

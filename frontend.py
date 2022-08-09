@@ -1,3 +1,6 @@
+## Author: Emil Ostergaard
+## Date: 3 June 2022
+
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as sg
