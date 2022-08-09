@@ -2,6 +2,7 @@
 ## Date: 3 June 2022
 
 ## Importing all neccesary libraries
+from cmath import nan
 import numpy as np
 import math
 from scipy.linalg import block_diag
