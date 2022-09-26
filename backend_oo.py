@@ -3,6 +3,7 @@
 
 ## Importing all neccesary libraries
 from cmath import nan
+from pydoc import ModuleScanner
 import numpy as np
 import math
 from scipy.linalg import block_diag
@@ -467,21 +468,26 @@ class Cluster():
             S_rot[mode][mode+(self.num_of_modes+self.num_of_wires)] = np.sin(angle)
             S_rot[mode+(self.num_of_modes+self.num_of_wires)][mode] = -np.sin(angle)
 
-        self.symplectic = S_rot@S_bs@S_cz
+        S_rot = np.diag(np.ones((self.num_of_modes+self.num_of_wires)*2))
 
-        # plt.matshow(np.real(self.symplectic))
-        # plt.show()
+        self.symplectic = S_rot@S_bs@S_cz
 
         for i in range(self.num_of_wires):
             
             if i == 0:
                 Z_top = np.hstack((self.symplectic[self.wires_list[i][-2]+self.num_of_wires,0:self.num_of_wires],self.symplectic[self.wires_list[i][-2]+self.num_of_wires,self.num_of_modes+self.num_of_wires:]))
+                print(self.wires_list[i][-2]+self.num_of_wires,self.num_of_wires)
                 Z_bottom = np.hstack((self.symplectic[self.wires_list[i][-2]+self.num_of_wires*2+self.num_of_modes,0:self.num_of_wires],self.symplectic[self.wires_list[i][-2]+self.num_of_wires*2+self.num_of_modes,self.num_of_modes+self.num_of_wires:]))
+                print(self.wires_list[i][-2]+self.num_of_wires*2+self.num_of_modes,self.num_of_wires)
                 Y_top = self.symplectic[self.wires_list[i][-2]+self.num_of_wires,self.num_of_wires:self.num_of_modes+self.num_of_wires]
+                print(self.wires_list[i][-2]+self.num_of_wires)
                 Y_bottom = self.symplectic[self.wires_list[i][-2]+2*self.num_of_wires+self.num_of_modes,self.num_of_wires:self.num_of_modes+self.num_of_wires]
-            
+                print(self.wires_list[i][-2]+2*self.num_of_wires+self.num_of_modes)
+
                 U = np.array(self.symplectic[0:self.wires_list[i][-2]+self.num_of_wires,self.num_of_wires:self.num_of_modes+self.num_of_wires])
+                print(self.wires_list[i][-2]+self.num_of_wires)
                 V = np.hstack((self.symplectic[0:self.wires_list[i][-2]+self.num_of_wires, 0:self.num_of_wires], self.symplectic[0:self.wires_list[i][-2]+self.num_of_wires, self.num_of_modes+self.num_of_wires:]))
+                print(self.wires_list[i][-2]+self.num_of_wires)
 
             else:
                 Z_top = np.vstack([
@@ -530,24 +536,11 @@ class Cluster():
             Y_bottom
         ])
 
-        # print(np.shape(U))
-        # plt.matshow(np.real(U))
-        # # plt.show()
-
-        # plt.matshow(np.real(self.symplectic))
-        
-        # plt.matshow(np.real(V))
-        # # plt.matshow(np.real(Z))
-        # # plt.matshow(np.real(Y))
-        # plt.show()
-
         self.M = Z - Y@np.linalg.inv(U)@V
 
         self.G = self.M[:self.num_of_wires*2,:self.num_of_wires*2]
 
         self.N = self.M[:self.num_of_wires*2,self.num_of_wires*2:]
-
-        
 
     def modes_to_consider_2_mode(self, wire_1, wire_2):
         modes = []
@@ -575,10 +568,26 @@ class Cluster():
         for mode, angle in self.default_modes_and_angles.items():
             gate_modes_and_angles[mode+self.num_of_wires]=angle
 
+        output_mode = modes[-2]
+
         del modes[-2]
 
         for mode in modes:
             gate_modes_and_angles[mode]=np.random.ranf()*np.pi-np.pi/2
+
+        # need to set angles for the remaining wires to 0. (or that required for an indentity gate.)
+
+        modes_used = []
+        for mode, angle in gate_modes_and_angles.items():
+            modes_used.append(mode)
+
+        remaining_modes = []
+        for i in range(self.num_of_modes+self.num_of_wires):
+            if i not in modes_used and i != output_mode:
+                remaining_modes.append(i)
+        
+        for mode in remaining_modes:
+            gate_modes_and_angles[mode]=0
 
         self.calculate_gate(gate_modes_and_angles)
 
@@ -596,8 +605,6 @@ class Cluster():
             for mode in modes:
                 gate_modes_and_angles_temp = copy.deepcopy(gate_modes_and_angles)
                 gate_modes_and_angles_temp[mode]=gate_modes_and_angles_temp[mode]+step_size
-                # print(gate_modes_and_angles_temp[mode]-gate_modes_and_angles[mode])
-                # print(gate_modes_and_angles_temp[modes[0]], gate_modes_and_angles_temp[modes[1]])
                 self.calculate_gate(gate_modes_and_angles_temp)
                 implemented_gate_temp = np.array([
                     [self.G[wire][wire], self.G[wire][wire+self.num_of_wires]],
@@ -627,8 +634,5 @@ class Cluster():
 
             diff = gate_diff(implemented_gate, gate)
 
-            print(implemented_gate)
-            print(diff)
-
-        for mode in modes:
-            print(gate_modes_and_angles[mode])
+        # for mode in modes:
+        #     print(gate_modes_and_angles[mode])
