@@ -1,6 +1,7 @@
 ## Author: Emil Ostergaard
 ## Date: 3 June 2022
 
+from matplotlib import projections
 from backend_oo import *
 
 num_of_wires_horizontal = 2
@@ -14,13 +15,13 @@ cluster.set_default_angles()
 
 # cluster.plot()
 
-desired_gate = [
-    [1,0],
-    [1,1]
-]
+# desired_gate = [
+#     [1,0],
+#     [1,1]
+# ]
 
-cluster.find_angle_single_mode(0,desired_gate)
+# cluster.find_angle_single_mode(0,desired_gate)
 
-# cluster.plot()
+cluster.plot(projection=1)
 
 # print(cluster.wires_grid)
