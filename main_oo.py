@@ -7,7 +7,7 @@ from backend_oo import *
 num_of_wires_horizontal = 1
 num_of_wires_vertical = 1
 num_of_layers = 1
-squeezing = 5
+squeezing = 0.5
 
 cluster = Cluster(num_of_wires_horizontal, num_of_wires_vertical, num_of_layers, squeezing)  
 

@@ -173,7 +173,7 @@ def gate_diff(gate, desired_gate):
     diff = 0
     for row in diff_matrix:
         for element in row:
-            diff += np.real(element)
+            diff += abs(np.real(element))
 
     return diff
 
@@ -468,27 +468,19 @@ class Cluster():
             S_rot[mode][mode+(self.num_of_modes+self.num_of_wires)] = np.sin(angle)
             S_rot[mode+(self.num_of_modes+self.num_of_wires)][mode] = -np.sin(angle)
 
-        S_rot = np.diag(np.ones((self.num_of_modes+self.num_of_wires)*2))
-
         self.symplectic = S_rot@S_bs@S_cz
 
         for i in range(self.num_of_wires):
             
             if i == 0:
                 Z_top = np.hstack((self.symplectic[self.wires_list[i][-2]+self.num_of_wires,0:self.num_of_wires],self.symplectic[self.wires_list[i][-2]+self.num_of_wires,self.num_of_modes+self.num_of_wires:]))
-                print(self.wires_list[i][-2]+self.num_of_wires,self.num_of_wires)
                 Z_bottom = np.hstack((self.symplectic[self.wires_list[i][-2]+self.num_of_wires*2+self.num_of_modes,0:self.num_of_wires],self.symplectic[self.wires_list[i][-2]+self.num_of_wires*2+self.num_of_modes,self.num_of_modes+self.num_of_wires:]))
-                print(self.wires_list[i][-2]+self.num_of_wires*2+self.num_of_modes,self.num_of_wires)
                 Y_top = self.symplectic[self.wires_list[i][-2]+self.num_of_wires,self.num_of_wires:self.num_of_modes+self.num_of_wires]
-                print(self.wires_list[i][-2]+self.num_of_wires)
                 Y_bottom = self.symplectic[self.wires_list[i][-2]+2*self.num_of_wires+self.num_of_modes,self.num_of_wires:self.num_of_modes+self.num_of_wires]
-                print(self.wires_list[i][-2]+2*self.num_of_wires+self.num_of_modes)
 
                 U = np.array(self.symplectic[0:self.wires_list[i][-2]+self.num_of_wires,self.num_of_wires:self.num_of_modes+self.num_of_wires])
-                print(self.wires_list[i][-2]+self.num_of_wires)
                 V = np.hstack((self.symplectic[0:self.wires_list[i][-2]+self.num_of_wires, 0:self.num_of_wires], self.symplectic[0:self.wires_list[i][-2]+self.num_of_wires, self.num_of_modes+self.num_of_wires:]))
-                print(self.wires_list[i][-2]+self.num_of_wires)
-
+            
             else:
                 Z_top = np.vstack([
                     Z_top,
@@ -535,7 +527,6 @@ class Cluster():
             Y_top,
             Y_bottom
         ])
-
         self.M = Z - Y@np.linalg.inv(U)@V
 
         self.G = self.M[:self.num_of_wires*2,:self.num_of_wires*2]
@@ -598,7 +589,10 @@ class Cluster():
 
         diff = gate_diff(implemented_gate, gate)
 
-        while diff > 0.05:
+        num_of_runs = 0
+
+        while diff > 0.05 or num_of_runs > 200:
+            num_of_runs += 1
             gradients = {}
             step_size = 0.001*np.pi
             decent_size = step_size
@@ -634,5 +628,11 @@ class Cluster():
 
             diff = gate_diff(implemented_gate, gate)
 
-        # for mode in modes:
-        #     print(gate_modes_and_angles[mode])
+        for mode in modes:
+            print(gate_modes_and_angles[mode])
+            print(1/np.tan(gate_modes_and_angles[mode]))
+        print(implemented_gate)
+        print(diff)
+        print(num_of_runs)
+        
+            
